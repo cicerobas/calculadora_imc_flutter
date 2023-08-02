@@ -1,5 +1,6 @@
 import 'package:calculadora_imc_flutter/models/imc_model.dart';
 import 'package:calculadora_imc_flutter/repositories/imc_repository.dart';
+import 'package:calculadora_imc_flutter/utils/shared_prefs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,9 +14,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   var imcRepository = IMCRepository();
   var _imcs = <IMCModel>[];
+  String? nomeUsuario;
 
   TextEditingController alturaController = TextEditingController();
   TextEditingController pesoController = TextEditingController();
+  TextEditingController nomeController = TextEditingController();
 
   void registrarImc() {
     double? peso = double.tryParse(pesoController.text.replaceAll(',', '.'));
@@ -36,15 +39,64 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    carregarDados();
+  }
+
+  void carregarDados() async {
+    nomeUsuario = await SharedPrefs.getUsername();
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Calculadora IMC',
-              style: TextStyle(
+          title: Text('Olá ${nomeUsuario ?? ''}, registre seu IMC!',
+              style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold)),
           centerTitle: true,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                            title: const Text(
+                              'Configurações',
+                              textAlign: TextAlign.center,
+                            ),
+                            content: Wrap(
+                              children: [
+                                TextField(
+                                  controller: nomeController,
+                                  decoration:
+                                      const InputDecoration(hintText: "Nome"),
+                                )
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    SharedPrefs.setUsername(
+                                        nomeController.text);
+                                    Navigator.pop(context);
+                                    carregarDados();
+                                  },
+                                  child: const Text('Salvar'))
+                            ],
+                          );
+                        });
+                  },
+                  child: const Icon(Icons.settings)),
+            )
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -53,7 +105,7 @@ class _HomePageState extends State<HomePage> {
 
             showDialog(
                 context: context,
-                builder: (BuildContext bc) {
+                builder: (_) {
                   return AlertDialog(
                     title: const Text(
                       'Registrar IMC',
