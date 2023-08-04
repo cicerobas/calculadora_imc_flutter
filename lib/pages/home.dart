@@ -20,16 +20,14 @@ class _HomePageState extends State<HomePage> {
   TextEditingController pesoController = TextEditingController();
   TextEditingController nomeController = TextEditingController();
 
-  void registrarImc() {
+  void registrarImc() async {
     double? peso = double.tryParse(pesoController.text.replaceAll(',', '.'));
     double? altura =
         double.tryParse(alturaController.text.replaceAll(',', '.'));
 
     if (peso != null && altura != null) {
       imcRepository.registrarImc(peso, altura);
-      setState(() {
-        _imcs = imcRepository.getImcs();
-      });
+      carregarDados();
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -46,6 +44,7 @@ class _HomePageState extends State<HomePage> {
 
   void carregarDados() async {
     nomeUsuario = await SharedPrefs.getUsername();
+    _imcs = await imcRepository.getImcs();
     setState(() {});
   }
 
@@ -162,6 +161,7 @@ class _HomePageState extends State<HomePage> {
                 itemBuilder: (BuildContext bc, int index) {
                   var registro = _imcs[index];
                   return Padding(
+                    key: Key(registro.id.toString()),
                     padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
                     child: Container(
                       width: double.infinity,

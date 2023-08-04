@@ -1,23 +1,8 @@
 import 'package:calculadora_imc_flutter/models/imc_model.dart';
+import 'package:calculadora_imc_flutter/utils/sqlite_database.dart';
 import 'package:flutter/material.dart';
 
-/*
- < 16        | Magreza grave
- 16 a < 17   | Magreza moderada
- 17 a < 18,5 | Magreza leve
- 18,5 a < 25 | Saldável
- 25 a < 30   | Sobrepeso
- 30 a < 35   | Obesidade Grau 1
- 35 a < 40   | Obesidade Grau 2 (severa)
- >= 40       | Obesidade Grau 3 (mórbida)
-
- IMC = peso(Kg) / altura²(m)
- 
- */
-
 class IMCRepository {
-  List<IMCModel> _imcs = [];
-
   Map<String, Color> statusCor = {
     'Magreza Grave': const Color(0xffC7731B),
     'Magreza Moderada': const Color(0xff7AA2CB),
@@ -29,10 +14,12 @@ class IMCRepository {
     'Obesidade III Mórbida': const Color(0xffC22339),
   };
 
-  void registrarImc(double peso, double altura) {
+  Future<void> registrarImc(double peso, double altura) async {
+    final db = await SQLiteDatabase().getDb();
     double imc = setImc(peso, altura);
     String status = setStatus(imc);
-    _imcs.add(IMCModel(peso, altura, imc, status, statusCor[status]!));
+    var novoIMC = IMCModel(null, peso, altura, imc, status, statusCor[status]!);
+    await db.insert('imcs', novoIMC.imcToMap());
   }
 
   double setImc(double peso, double altura) => peso / (altura * altura);
@@ -58,5 +45,17 @@ class IMCRepository {
     }
   }
 
-  List<IMCModel> getImcs() => _imcs;
+  Future<List<IMCModel>> getImcs() async {
+    final db = await SQLiteDatabase().getDb();
+    final List<Map<String, dynamic>> map = await db.query('imcs');
+    return List.generate(map.length, (index) {
+      return IMCModel(
+          map[index]['id'],
+          map[index]['peso'],
+          map[index]['altura'],
+          map[index]['imc'],
+          map[index]['status'],
+          Color(map[index]['cor']));
+    });
+  }
 }
