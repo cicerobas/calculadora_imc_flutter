@@ -160,46 +160,99 @@ class _HomePageState extends State<HomePage> {
                 itemCount: _imcs.length,
                 itemBuilder: (BuildContext bc, int index) {
                   var registro = _imcs[index];
-                  return Padding(
+                  return Dismissible(
                     key: Key(registro.id.toString()),
-                    padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: registro.corStatus.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: registro.corStatus, width: 8),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Peso ${registro.peso.toString()} Kg',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  Text(
-                                    'Altura ${registro.altura.toString()} m',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  Text(
-                                    'IMC ${registro.imc.toStringAsFixed(1)}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                ],
+                    onDismissed: (_) async {
+                      await imcRepository.deletarImc(registro.id!);
+                      carregarDados();
+                    },
+                    confirmDismiss: (_) async {
+                      return await showDialog(
+                          context: context,
+                          builder: (BuildContext bc) {
+                            return AlertDialog(
+                              title: const Text(
+                                'Deletar esse registro?',
+                                textAlign: TextAlign.center,
                               ),
-                              Text(
-                                registro.status,
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w400),
-                              )
-                            ],
+                              actions: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(bc).pop(false),
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.cancel, size: 36),
+                                            Text(
+                                              'Cancelar',
+                                              style: TextStyle(fontSize: 18),
+                                            )
+                                          ],
+                                        )),
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(bc).pop(true),
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.delete, size: 36),
+                                            Text(
+                                              'Deletar',
+                                              style: TextStyle(fontSize: 18),
+                                            )
+                                          ],
+                                        )),
+                                  ],
+                                )
+                              ],
+                            );
+                          });
+                    },
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.only(left: 10, right: 10, top: 8),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: registro.corStatus.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(16),
+                          border:
+                              Border.all(color: registro.corStatus, width: 8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 12),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Peso ${registro.peso.toString()} Kg',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      'Altura ${registro.altura.toString()} m',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      'IMC ${registro.imc.toStringAsFixed(1)}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  registro.status,
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),

@@ -58,4 +58,9 @@ class IMCRepository {
           Color(map[index]['cor']));
     });
   }
+
+  Future deletarImc(int id) async {
+    final db = await SQLiteDatabase().getDb();
+    db.delete('imcs', where: 'id=?', whereArgs: [id]);
+  }
 }
